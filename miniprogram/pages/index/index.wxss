@@ -26,3 +26,20 @@
   height: 100%;
   width: 100%;
 }
+.timetips {
+  text-align: center;
+  font-size: 30rpx;
+  display: flex;
+  margin-top: 40rpx;
+  justify-content: center;
+  align-items: center;
+}
+.timetips-icon {
+  margin-right: 10rpx;
+  width: 36rpx;
+  height: 28rpx
+}
+.timetips-text {
+  line-height: 42rpx;
+  opacity: 0.5;
+}

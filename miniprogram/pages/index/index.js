@@ -56,7 +56,7 @@ Page({
         wx.setNavigationBarColor({
           frontColor: '#000000',
           backgroundColor: weatherColorMap[weather],
-        })
+        });
       },
       complete: () => {
         callback && callback();
