@@ -15,12 +15,12 @@ const weatherBgMap = {
   'snow': 'snow-bg.png'
 }
 const weatherColorMap = {
-  'sunny': '#cbeefd',
-  'cloudy': '#deeef6',
-  'overcast': '#c6ced2',
-  'lightrain': '#bdd5e1',
-  'heavyrain': '#c5ccd0',
-  'snow': '#aae1fc'
+  'sunny': '#c4efff',
+  'cloudy': '#daeff7',
+  'overcast': '#c4ced2',
+  'lightrain': '#b6d6e2',
+  'heavyrain': '#c3ccd0',
+  'snow': '#99e3ff'
 }
 
 Page({
@@ -29,7 +29,15 @@ Page({
     nowWeather: '',
     nowWeatherBg: ''
   },
+  onPullDownRefresh() {
+    this.getNow(() => {
+      wx.stopPullDownRefresh()
+    });
+  },
   onLoad() {
+    this.getNow();
+  },
+  getNow(callback) {
     wx.request({
       url: 'https://test-miniprogram.com/api/weather/now', //仅为示例，并非真实的接口地址
       data: {
@@ -39,7 +47,7 @@ Page({
         let result = res.data.result;
         let temp = result.now.temp;
         let weather = result.now.weather;
-        console.log(temp,weather);
+        console.log(temp, weather);
         this.setData({
           nowTemp: temp,
           nowWeather: weatherMap[weather],
@@ -49,8 +57,11 @@ Page({
           frontColor: '#000000',
           backgroundColor: weatherColorMap[weather],
         })
+      },
+      complete: () => {
+        callback && callback();
       }
-    })
+    });
   }
 })
 
