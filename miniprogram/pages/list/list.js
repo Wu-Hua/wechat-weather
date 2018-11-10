@@ -6,13 +6,17 @@ Page({
    * 页面的初始数据
    */
   data: {
-    weekWeather: []
+    weekWeather: [],
+    city: '广州市'
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad() {
+  onLoad(options) {
+    this.setData({
+      city: options.city
+    })
     this.getWeekWeather();
   },
 
@@ -57,7 +61,7 @@ Page({
     wx.request({
       url: 'https://test-miniprogram.com/api/weather/future',
       data: {
-        city: '广州市',
+        city: this.data.city,
         time: new Date().getTime()
       },
       success: res => {

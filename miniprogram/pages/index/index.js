@@ -17,14 +17,25 @@ const weatherColorMap = {
 
 var QQMapWX = require('../../libs/qqmap-wx-jssdk.js');
 
+const UNPROMPTED = 0
+const UNAUTHORIZED = 1
+const AUTHORIZED = 2
+
+const UNPROMPTED_TIPS = "点击获取当前位置"
+const UNAUTHORIZED_TIPS = "点击开启位置权限"
+const AUTHORIZED_TIPS = ""
+
 Page({
   data: {
     nowTemp: '',
     nowWeather: '',
     nowWeatherBg: '',
     hourlyWeather: [],
-    todayTemp: "",
-    todayDate: ""
+    todayTemp: '',
+    todayDate: '',
+    city: '广州市',
+    locationTipsText: UNPROMPTED_TIPS,
+    locationAuthType: UNPROMPTED 
   },
   onPullDownRefresh() {
     this.getNow(() => {
@@ -36,12 +47,33 @@ Page({
     this.qqmapsdk = new QQMapWX({
       key: 'EAXBZ-33R3X-AA64F-7FIPQ-BY27J-5UF5B'
     })
+    wx.getSetting({
+      success: res => {
+        let auth = res.authSetting['scope.userLocation']
+        let locationAuthType = auth ? AUTHORIZED
+          : (auth === false) ? UNAUTHORIZED : UNPROMPTED
+        let locationTipsText = auth ? AUTHORIZED_TIPS
+          : (auth === false) ? UNAUTHORIZED_TIPS : UNPROMPTED_TIPS
+        this.setData({
+          locationAuthType: locationAuthType,
+          locationTipsText: locationTipsText
+        })
+
+        if (auth)
+          this.getCityAndWeather()
+        else
+          this.getNow() //使用默认城市广州
+      },
+      fail: () => {
+        this.getNow() //使用默认城市广州
+      }
+    })
   },
   getNow(callback) {
     wx.request({
       url: 'https://test-miniprogram.com/api/weather/now', //仅为示例，并非真实的接口地址
       data: {
-        city: '广州市'
+        city: this.data.city
       },
       success: res => {
         let result = res.data.result;
@@ -94,12 +126,31 @@ Page({
   },
   onTapDayWeather() {
     wx.navigateTo({
-      url: '../list/list'
+      url: '../list/list?city=' + this.data.city
     })
   },
   onTapLocation() {
+    if (this.data.locationAuthType === UNAUTHORIZED) {
+      wx.openSetting({
+        success: res => {
+          let auth = res.authSetting['scope.userLocation'];
+          if(auth) {
+            this.getCityAndWeather();
+          }
+        }
+      });
+    }
+    else {
+      this.getCityAndWeather();
+    }
+  },
+  getCityAndWeather() {      
     wx.getLocation({
       success: res => {
+        this.setData({
+          locationAuthType: AUTHORIZED,
+          locationTipsText: AUTHORIZED_TIPS
+        })
         this.qqmapsdk.reverseGeocoder({
           location: {
             latitude: res.latitude,
@@ -107,9 +158,18 @@ Page({
           },
           success: res => {
             let city = res.result.address_component.city
-            console.log(city)
+            this.setData({
+              city: city,
+            })
+            this.getNow();
           }
         });
+      },
+      fail: ()=> {
+        this.setData({
+          locationAuthType: UNAUTHORIZED,
+          locationTipsText: UNAUTHORIZED_TIPS
+        })
       }
     })
   }
