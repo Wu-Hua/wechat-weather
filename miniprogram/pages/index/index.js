@@ -6,14 +6,6 @@ const weatherMap = {
   'heavyrain': '大雨',
   'snow': '雪'
 }
-const weatherBgMap = {
-  'sunny': 'sunny-bg.png',
-  'cloudy': 'cloudy-bg.png',
-  'overcast': 'overcast-bg.png',
-  'lightrain': 'lightrain-bg.png',
-  'heavyrain': 'heavyrain-bg.png',
-  'snow': 'snow-bg.png'
-}
 const weatherColorMap = {
   'sunny': '#c4efff',
   'cloudy': '#daeff7',
@@ -27,7 +19,8 @@ Page({
   data: {
     nowTemp: '',
     nowWeather: '',
-    nowWeatherBg: ''
+    nowWeatherBg: '',
+    hourlyWeather: [],
   },
   onPullDownRefresh() {
     this.getNow(() => {
@@ -47,16 +40,33 @@ Page({
         let result = res.data.result;
         let temp = result.now.temp;
         let weather = result.now.weather;
-        console.log(temp, weather);
+        console.log(result);
         this.setData({
-          nowTemp: temp,
+          nowTemp: temp + '°',
           nowWeather: weatherMap[weather],
-          nowWeatherBg: '../../images/' + weatherBgMap[weather]
+          nowWeatherBg: '../../images/' + weather + '-bg.png',
         });
         wx.setNavigationBarColor({
           frontColor: '#000000',
           backgroundColor: weatherColorMap[weather],
         });
+
+        // set forecast
+        let forecast = result.forecast;
+        console.log(forecast);
+        let hourlyWeather = [];
+        let nowHour = new Date().getHours();
+        for(let i = 0; i < 24; i+=3) {
+          hourlyWeather.push({
+            time: (i + nowHour) % 24 + '时',
+            iconPath: '../../images/' + forecast[(i / 3)].weather + '-icon.png',
+            temp: forecast[(i / 3)].temp + '°'
+          });
+        }
+        hourlyWeather[0].time = '现在'
+        this.setData({
+          hourlyWeather: hourlyWeather
+        })
       },
       complete: () => {
         callback && callback();
