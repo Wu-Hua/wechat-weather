@@ -21,6 +21,8 @@ Page({
     nowWeather: '',
     nowWeatherBg: '',
     hourlyWeather: [],
+    todayTemp: "",
+    todayDate: ""
   },
   onPullDownRefresh() {
     this.getNow(() => {
@@ -40,6 +42,7 @@ Page({
         let result = res.data.result;
         this.setNow(result);
         this.setHourlyWeather(result);
+        this.setToday(result);
       },
       complete: () => {
         callback && callback();
@@ -53,7 +56,7 @@ Page({
     this.setData({
       nowTemp: temp + '°',
       nowWeather: weatherMap[weather],
-      nowWeatherBg: '../../images/' + weather + '-bg.png',
+      nowWeatherBg: `../../images/${weather}-bg.png`,
     });
     wx.setNavigationBarColor({
       frontColor: '#000000',
@@ -68,13 +71,25 @@ Page({
     for (let i = 0; i < 8; i++ ) {
       hourlyWeather.push({
         time: (i*3 + nowHour) % 24 + '时',
-        iconPath: '../../images/' + forecast[i].weather + '-icon.png',
+        iconPath: `../../images/${forecast[i].weather}-icon.png`,
         temp: forecast[i].temp + '°'
       });
     }
     hourlyWeather[0].time = '现在'
     this.setData({
       hourlyWeather: hourlyWeather
+    })
+  },
+  setToday(result) {
+    let date = new Date()
+    this.setData({
+      todayDate: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} 今天`,
+      todayTemp: `${result.today.minTemp}° - ${result.today.maxTemp}°`
+    })
+  },
+  onTapDayWeather() {
+    wx.navigateTo({
+      url: '../list/list'
     })
   }
 })
