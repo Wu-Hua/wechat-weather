@@ -15,6 +15,8 @@ const weatherColorMap = {
   'snow': '#99e3ff'
 }
 
+var QQMapWX = require('../../libs/qqmap-wx-jssdk.js');
+
 Page({
   data: {
     nowTemp: '',
@@ -31,6 +33,9 @@ Page({
   },
   onLoad() {
     this.getNow();
+    this.qqmapsdk = new QQMapWX({
+      key: 'EAXBZ-33R3X-AA64F-7FIPQ-BY27J-5UF5B'
+    })
   },
   getNow(callback) {
     wx.request({
@@ -90,6 +95,22 @@ Page({
   onTapDayWeather() {
     wx.navigateTo({
       url: '../list/list'
+    })
+  },
+  onTapLocation() {
+    wx.getLocation({
+      success: res => {
+        this.qqmapsdk.reverseGeocoder({
+          location: {
+            latitude: res.latitude,
+            longitude: res.longitude
+          },
+          success: res => {
+            let city = res.result.address_component.city
+            console.log(city)
+          }
+        });
+      }
     })
   }
 })
